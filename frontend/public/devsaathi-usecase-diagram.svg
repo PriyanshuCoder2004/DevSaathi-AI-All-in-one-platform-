@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fc" rx="0"/>
+
+  <!-- Title -->
+  <text x="600" y="38" text-anchor="middle" font-size="22" font-weight="700" fill="#1a1a2e" letter-spacing="0.5">DevSaathi AI — UML Use Case Diagram</text>
+  <line x1="200" y1="48" x2="1000" y2="48" stroke="#c0c8e0" stroke-width="1.2"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SYSTEM BOUNDARY                                         -->
+  <!-- ═══════════════════════════════════════════════════════ --

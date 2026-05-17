@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@config "../tailwind.config.ts";
+
+* { box-sizing: border-box; }
+
+body { 
+  background-color: #0A0F1E; 
+  color: #FFFFFF; 
+  font-family: 'Inter', sans-serif; 
+  margin: 0; 
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0D1626; }
+::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+  .animate-reverse-spin {
+    animation: reverse-spin 6s linear infinite;
+  }
+}
+
+@keyframes reverse-spin {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 10px;
+}

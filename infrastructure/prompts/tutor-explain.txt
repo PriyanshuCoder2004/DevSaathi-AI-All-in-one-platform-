@@ -1,0 +1,14 @@
+Explain the following technical topic to a developer.
+Topic: {{TOPIC}}
+Language: {{LANGUAGE}}
+{{LANG_INSTRUCTION}}
+  
+  {
+    "topic": "{{TOPIC}}",
+    "explanation": "Write 3 clear paragraphs. First paragraph: what it is simply. Second paragraph: how it works. Third paragraph: when and why we use it. IMPORTANT: Use '\\n\\n' between paragraphs.",
+    "codeExample": "Write complete working code with inline comments explaining each line",
+    "codeLanguage": "Choose the most relevant language for this topic (e.g. javascript, python, java, c++, sql).",
+    "realLifeExample": "Write an Indian daily life analogy that makes this concept very clear",
+    "subtopics": ["related concept 1", "related concept 2", "related concept 3"],
+    "keyTakeaway": "Write the single most important thing to remember in one sentence"
+  }
