@@ -146,5 +146,5 @@ This command automatically synthesizes the CloudFormation template, builds the N
 ---
 
 <div align="center">
-  <p>Built with ❤️ for the Developer Community.</p>
+  <p>Built by Priyanshu Arya and her team with ❤️ for the Coding and Developer Community.</p>
 </div>
