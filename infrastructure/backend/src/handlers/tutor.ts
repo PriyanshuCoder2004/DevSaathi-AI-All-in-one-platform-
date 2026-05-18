@@ -60,25 +60,32 @@ export const handler = async (event: any) => {
 };
 
 async function explainTopic(body: any, userId: string) {
-  const { topic, language = 'en' } = body;
+  const { topic, language = 'en', module = 'General' } = body;
   const timestamp = Date.now();
   
   if (!topic) return err(400, 'Topic is required');
   if (topic.length > 500) return err(400, 'Topic exceeds 500 character limit');
 
   const isHindi = language === 'hi';
+  const isGeneral = !module || module === 'General' || module === 'Common';
+
   const langInstruction = isHindi 
     ? "IMPORTANT: Write the entire response (explanation and realLifeExample) in HINDI (using Devanagari script). Keep the technical topic name and subtopics in English but explain them in Hindi." 
     : "Write the response in clear English.";
 
+  const moduleInstruction = isGeneral ? "" : `You are acting as an expert AI tutor for the "${module}" module. Please explain the requested Topic ("${topic}") comprehensively and clearly.`;
+
   const defaultPrompt = `Explain the following technical topic to a developer.
 Topic: {{TOPIC}}
 Language: {{LANGUAGE}}
+Module: {{MODULE}}
 {{LANG_INSTRUCTION}}
+{{MODULE_INSTRUCTION}}
   
   {
     "topic": "{{TOPIC}}",
-    "explanation": "Write 3 clear paragraphs. First paragraph: what it is simply. Second paragraph: how it works. Third paragraph: when and why we use it. IMPORTANT: Use '\\n\\n' between paragraphs.",
+    "isUnrelatedModule": false,
+    "explanation": "Provide a comprehensive, highly detailed, and beautifully structured explanation. If the user asks a multi-part or long question (e.g., asking what it is, how it works, pros/cons, advantages), you MUST answer every single part explicitly and thoroughly. Structure your response like a professional AI assistant: 1. Start with a clear Short Answer / Definition. 2. Provide a Detailed Version explaining exactly How it Works step-by-step. 3. Include dedicated sections for Advantages, Disadvantages, or Pros & Cons using bullet points. Use markdown headings (e.g. '### What is it', '### How it Works', '### Pros & Cons') and bullet points ('- '). IMPORTANT: Separate all sections, paragraphs, and bulleted lists with '\\n\\n'.",
     "codeExample": "Write complete working code with inline comments explaining each line",
     "codeLanguage": "Choose the most relevant language for this topic (e.g. javascript, python, java, c++, sql).",
     "realLifeExample": "Write an Indian daily life analogy that makes this concept very clear",
@@ -87,13 +94,22 @@ Language: {{LANGUAGE}}
   }`;
 
   const promptTemplate = await getPrompt('tutor/explain.txt', defaultPrompt);
-  const prompt = promptTemplate
+  let prompt = promptTemplate
     .replace(/{{TOPIC}}/g, topic)
     .replace(/{{LANGUAGE}}/g, isHindi ? 'Hindi' : 'English')
-    .replace(/{{LANG_INSTRUCTION}}/g, langInstruction);
+    .replace(/{{MODULE}}/g, module)
+    .replace(/{{LANG_INSTRUCTION}}/g, langInstruction)
+    .replace(/{{MODULE_INSTRUCTION}}/g, moduleInstruction);
+
+  if (!isGeneral && !promptTemplate.includes('{{MODULE_INSTRUCTION}}')) {
+    prompt += `\n\n${moduleInstruction}`;
+  }
 
   const raw = await callAI(prompt, 1500);
   let parsed = parseJSON(raw);
+  
+  // Force isUnrelatedModule to false so the AI never rejects a topic regardless of folder
+  parsed.isUnrelatedModule = false;
   
   // Validation & Defaults to prevent frontend crashes
   if (typeof parsed !== 'object' || parsed === null) {

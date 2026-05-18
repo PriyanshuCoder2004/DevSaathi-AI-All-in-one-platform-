@@ -5,7 +5,7 @@ import { useToast } from '../components/ui/ToastProvider';
 export const useExplainTopic = () => {
   const { showToast } = useToast();
   return useMutation({
-    mutationFn: (data: { topic: string; language: string }) => 
+    mutationFn: (data: { topic: string; language: string; module?: string }) => 
       api.post('/explain', data),
     onError: (error: any) => {
       showToast(error.message || 'Failed to explain topic', 'error');
