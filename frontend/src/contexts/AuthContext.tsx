@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(!localStorage.getItem('devsaathi_user'));
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
     setIsInitialLoading(true);
@@ -85,10 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('devsaathi_user', JSON.stringify(userData));
       } else {
         setUser(null);
+        localStorage.removeItem('devsaathi_user');
       }
     } catch (error) {
       console.error('checkAuth failed:', error);
       setUser(null);
+      localStorage.removeItem('devsaathi_user');
     } finally {
       setIsInitialLoading(false);
     }

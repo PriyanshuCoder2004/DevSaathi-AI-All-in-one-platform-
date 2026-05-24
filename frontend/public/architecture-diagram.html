@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevSaathi AI — System Architecture Diagram</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0A0F1E; display:flex; flex-direction:column; align-items:center; padding:32px 16px; font-family:'Segoe UI',sans-serif; min-height:100vh; }
+h1 { color:#f1f5f9; font-size:22px; font-weight:700; margin-bottom:4px; letter-spacing:0.5px; }
+p.sub { color:#64748b; font-size:13px; margin-bottom:28px; }
+canvas { border-radius:16px; border:1px solid #1e293b; box-shadow:0 8px 60px rgba(0,0,0,0.8); }
+</style>
+</head>
+<body>
+<h1>DevSaathi AI — System Architecture</h1>
+<p class="sub">Modern Layered Architecture · AWS Serverless · Dark Theme</p>
+<canvas id="c" width="1300" height="1680"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ── helpers ──────────────────────────────────────────────
+function bg() {
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0A0F1E'); g.addColorStop(1,'#0d1526');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+
+function roundRect(x,y,w,h,r,fill,stroke,sw=1.5){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
+}
+
+function text(t,x,y,size,color,align='center',weight='normal'){
+  ctx.font=`${weight} ${size}px 'Segoe UI',sans-serif`;
+  ctx.fillStyle=color; ctx.textAlign=align; ctx.fillText(t,x,y);
+}
+
+function wrapText(lines,x,y,size,color,lineH=18){
+  lines.forEach((l,i)=>text(l,x,y+i*lineH,size,color));
+}
+
+function layerHeader(x,y,w,label,color){
+  roundRect(x,y,w,32,6,color+'22',color,1.5);
+  text(label,x+w/2,y+21,12,color,'center','700');
+}
+
+function arrow(x1,y1,x2,y2,color='#64748b',dash=false,label='',lcolor='#94a3b8'){
+  ctx.save();
+  if(dash) ctx.setLineDash([6,4]); else ctx.setLineDash([]);
+  ctx.strokeStyle=color; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  // arrowhead
+  const angle=Math.atan2(y2-y1,x2-x1);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-10*Math.cos(angle-0.4),y2-10*Math.sin(angle-0.4));
+  ctx.lineTo(x2-10*Math.cos(angle+0.4),y2-10*Math.sin(angle+0.4));
+  ctx.closePath(); ctx.fill();
+  if(label){
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    ctx.fillStyle='#0A0F1E';
+    const tw=ctx.measureText(label).width;
+    ctx.fillRect(mx-tw/2-4,my-9,tw+8,14);
+    text(label,mx,my+2,10,lcolor);
+  }
+  ctx.restore();
+}
+
+function curvedArrow(x1,y1,x2,y2,cx,cy,color,dash=false,label=''){
+  ctx.save();
+  if(dash) ctx.setLineDash([6,4]); else ctx.setLineDash([]);
+  ctx.strokeStyle=color; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(x1,y1);
+  ctx.quadraticCurveTo(cx,cy,x2,y2); ctx.stroke();
+  const angle=Math.atan2(y2-cy,x2-cx);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-10*Math.cos(angle-0.4),y2-10*Math.sin(angle-0.4));
+  ctx.lineTo(x2-10*Math.cos(angle+0.4),y2-10*Math.sin(angle+0.4));
+  ctx.closePath(); ctx.fill();
+  if(label){
+    const mx=(x1+x2)/2+10, my=(y1+y2)/2;
+    ctx.fillStyle='#0A0F1E';
+    const tw=ctx.measureText(label).width;
+    ctx.fillRect(mx-tw/2-4,my-9,tw+8,14);
+    text(label,mx,my+2,10,'#94a3b8');
+  }
+  ctx.restore();
+}
+
+// ── DRAW ─────────────────────────────────────────────────
+function draw(){
+  bg();
+
+  // ── TITLE ──
+  text('DevSaathi AI — System Architecture Diagram',W/2,38,20,'#f1f5f9','center','700');
+  text('AWS Serverless · React SPA · Amazon Bedrock · DynamoDB · Cognito',W/2,60,12,'#475569');
+
+  const PAD=40, LW=W-PAD*2;
+
+  // ════════════════════════════════════════════════════════
+  // LAYER 1 — CLIENT  (Blue #3b82f6)
+  // ════════════════════════════════════════════════════════
+  const L1y=80, L1h=210;
+  roundRect(PAD,L1y,LW,L1h,14,'#0d1f3c','#3b82f6',2);
+  layerHeader(PAD,L1y,LW,'⬛  LAYER 1 — CLIENT LAYER   |   React 18 + TypeScript SPA (Vite)','#3b82f6');
+
+  const subW=270, subH=140, subY=L1y+44, subGap=(LW-subW*4)/5;
+  const subs=[
+    {title:'🔐 Auth Pages',lines:['Login','Register','Verify Email','Reset Password'],c:'#1e3a5f',bc:'#60a5fa'},
+    {title:'🤖 AI Feature Pages',lines:['AI Tutor','Code Analyzer','Document Summarizer'],c:'#1a2f4a',bc:'#93c5fd'},
+    {title:'📊 Dashboard Pages',lines:['Progress Metrics','Notes Library','Quiz History','Activity Logs'],c:'#1e3a5f',bc:'#60a5fa'},
+    {title:'🧩 Shared UI / Components',lines:['Sidebar','Monaco Code Editor','Recharts Charts','Toast'],c:'#1a2f4a',bc:'#93c5fd'},
+  ];
+  subs.forEach((s,i)=>{
+    const sx=PAD+subGap+(subW+subGap)*i;
+    roundRect(sx,subY,subW,subH,8,s.c,s.bc,1.2);
+    text(s.title,sx+subW/2,subY+18,11,s.bc,'center','700');
+    s.lines.forEach((l,j)=>text('• '+l,sx+subW/2,subY+36+j*18,10,'#bfdbfe'));
+  });
+
+  // ── connector label ──
+  text('↓  HTTPS via CloudFront CDN  ↓',W/2,L1y+L1h+22,12,'#64748b','center','600');
+
+  // ════════════════════════════════════════════════════════
+  // LAYER 2 — CDN + API GATEWAY  (Purple #8b5cf6)
+  // ════════════════════════════════════════════════════════
+  const L2y=L1y+L1h+44, L2h=200;
+  roundRect(PAD,L2y,LW,L2h,14,'#1a1040','#8b5cf6',2);
+  layerHeader(PAD,L2y,LW,'⬛  LAYER 2 — CDN + API GATEWAY LAYER','#8b5cf6');
+
+  const bW=(LW-120)/2;
+  // Box A — CloudFront
+  roundRect(PAD+40,L2y+44,bW,130,8,'#1e1050','#a78bfa',1.5);
+  text('☁  AWS CloudFront',PAD+40+bW/2,L2y+64,13,'#c4b5fd','center','700');
+  wrapText(['• Hosts & distributes SPA build bundle','• SSL/TLS (HTTPS) Enforced','• Caches static assets globally','  at Edge Locations'],PAD+40+bW/2,L2y+84,10,'#ddd6fe',17);
+
+  // Box B — API Gateway
+  const bBx=PAD+40+bW+40;
+  roundRect(bBx,L2y+44,bW,130,8,'#1e1050','#a78bfa',1.5);
+  text('🔀  AWS API Gateway  (RestApi: prod)',bBx+bW/2,L2y+64,13,'#c4b5fd','center','700');
+  wrapText(['• Cognito JWT User Pool Authorizer','• CORS Configured (Allows React origins)','• Decoupled REST routes: Tutor, Code,','  Docs, Dashboard, Users'],bBx+bW/2,L2y+84,10,'#ddd6fe',17);
+
+  text('↓  JWT Authorized → Trigger Lambda  ↓',W/2,L2y+L2h+22,12,'#64748b','center','600');
+
+  // ════════════════════════════════════════════════════════
+  // LAYER 3 — COMPUTE  (Green #10b981)
+  // ════════════════════════════════════════════════════════
+  const L3y=L2y+L2h+44, L3h=230;
+  roundRect(PAD,L3y,LW,L3h,14,'#071f14','#10b981',2);
+  layerHeader(PAD,L3y,LW,'⬛  LAYER 3 — COMPUTE LAYER   |   Node.js 20 · AWS Lambda · Serverless','#10b981');
+
+  const fns=[
+    {name:'👤 UserFn',mem:'256MB · 30s',routes:['/user/profile','/user/preferences','/user/account']},
+    {name:'🎓 TutorFn',mem:'512MB · 30s',routes:['/explain','/quiz/generate','/quiz/evaluate','/notes/generate','/followup']},
+    {name:'💻 CodeFn',mem:'512MB · 30s',routes:['/code/explain','/code/debug','/code/improve']},
+    {name:'📄 DocsFn',mem:'512MB · 30s',routes:['/docs/upload-url','/docs/upload','/docs/summarize','/docs/history']},
+    {name:'📊 DashboardFn',mem:'256MB · 30s',routes:['Stats aggregator','Notes CRUD (/notes)','Activity Logs']},
+  ];
+  const fnW=(LW-60)/5, fnH=170;
+  fns.forEach((f,i)=>{
+    const fx=PAD+12+(fnW+3)*i;
+    roundRect(fx,L3y+44,fnW,fnH,8,'#0a2e1e','#34d399',1.2);
+    text(f.name,fx+fnW/2,L3y+62,11,'#6ee7b7','center','700');
+    text(f.mem,fx+fnW/2,L3y+78,9,'#4ade80');
+    f.routes.forEach((r,j)=>text(r,fx+fnW/2,L3y+96+j*17,9,'#a7f3d0'));
+  });
+
+  text('↓  InvokeModel (AI)  ↓',W/2-200,L3y+L3h+22,11,'#f59e0b','center','600');
+  text('↓  Read/Write (Storage)  ↓',W/2+200,L3y+L3h+22,11,'#14b8a6','center','600');
+
+  // ════════════════════════════════════════════════════════
+  // LAYER 4 — AI  (Amber #f59e0b)
+  // ════════════════════════════════════════════════════════
+  const L4y=L3y+L3h+44, L4h=220;
+  roundRect(PAD,L4y,LW,L4h,14,'#1c1200','#f59e0b',2);
+  layerHeader(PAD,L4y,LW,'⬛  LAYER 4 — AI LAYER   |   AWS Bedrock  (us-east-1)','#f59e0b');
+
+  const mW=(LW-160)/2;
+  // Nova Lite
+  roundRect(PAD+40,L4y+44,mW,150,8,'#2a1c00','#fbbf24',1.5);
+  text('🌟  Amazon Nova Lite',PAD+40+mW/2,L4y+64,13,'#fde68a','center','700');
+  text('amazon.nova-lite-v1:0',PAD+40+mW/2,L4y+80,10,'#fbbf24');
+  wrapText(['• Topic explanations','• Quiz generation','• Code explain / debug','• Document summarization'],PAD+40+mW/2,L4y+100,10,'#fef3c7',18);
+
+  // Nova Micro
+  const nmx=PAD+40+mW+40;
+  roundRect(nmx,L4y+44,mW,150,8,'#2a1c00','#fbbf24',1.5);
+  text('⚡  Amazon Nova Micro',nmx+mW/2,L4y+64,13,'#fde68a','center','700');
+  text('amazon.nova-micro-v1:0',nmx+mW/2,L4y+80,10,'#fbbf24');
+  wrapText(['• Lightweight text generation','• Formatting tasks'],nmx+mW/2,L4y+100,10,'#fef3c7',18);
+
+  // Prompt Templates box
+  const ptx=PAD+40+mW*2+80;
+  roundRect(ptx,L4y+44,140,150,8,'#1c1500','#d97706',1.2);
+  text('📝 Prompt Templates',ptx+70,L4y+64,10,'#fcd34d','center','700');
+  wrapText(['S3: devsaathi-prompts','Fetched at runtime','No redeploy needed','for prompt updates'],ptx+70,L4y+84,9,'#fef3c7',18);
+
+  // ════════════════════════════════════════════════════════
+  // LAYER 5 — STORAGE & IDENTITY  (Teal #14b8a6)
+  // ════════════════════════════════════════════════════════
+  const L5y=L4y+L4h+44, L5h=250;
+  roundRect(PAD,L5y,LW,L5h,14,'#001a18','#14b8a6',2);
+  layerHeader(PAD,L5y,LW,'⬛  LAYER 5 — STORAGE & IDENTITY LAYER','#14b8a6');
+
+  const sW=(LW-120)/3;
+  // DynamoDB
+  roundRect(PAD+30,L5y+44,sW,180,8,'#002a24','#2dd4bf',1.5);
+  text('🗄  DynamoDB',PAD+30+sW/2,L5y+64,13,'#99f6e4','center','700');
+  text('devsaathi-main',PAD+30+sW/2,L5y+80,10,'#5eead4');
+  wrapText(['• Single-table design + GSIs','• PK: USER#userId','• SK: TOPIC#timestamp','  QUIZ#timestamp','  NOTE#timestamp','  DOC#timestamp'],PAD+30+sW/2,L5y+100,10,'#ccfbf1',17);
+
+  // S3
+  const s3x=PAD+30+sW+30;
+  roundRect(s3x,L5y+44,sW,180,8,'#002a24','#2dd4bf',1.5);
+  text('🪣  AWS S3 Buckets',s3x+sW/2,L5y+64,13,'#99f6e4','center','700');
+  wrapText(['• devsaathi-uploads-9391','  (Secure PDF/text uploads)','• devsaathi-prompts-939169','  (AI Prompt Templates)','• SPA Hosting Bucket','  (Vite static bundle)'],s3x+sW/2,L5y+84,10,'#ccfbf1',17);
+
+  // Cognito
+  const cgx=PAD+30+sW*2+60;
+  roundRect(cgx,L5y+44,sW,180,8,'#002a24','#2dd4bf',1.5);
+  text('🔑  AWS Cognito User Pool',cgx+sW/2,L5y+64,13,'#99f6e4','center','700');
+  wrapText(['• User signup & sign-in','  (SRP/Password flows)','• CustomMessageFn trigger','  (Styled OTP emails)','• Issues short-lived','  JWT tokens'],cgx+sW/2,L5y+84,10,'#ccfbf1',17);
+
+  // ════════════════════════════════════════════════════════
+  // OBSERVABILITY  (Gray #6b7280)
+  // ════════════════════════════════════════════════════════
+  const OBy=L5y+L5h+44, OBh=90;
+  roundRect(PAD,OBy,LW,OBh,14,'#111827','#6b7280',1.5);
+  text('🔭  OBSERVABILITY',W/2,OBy+22,13,'#9ca3af','center','700');
+  text('AWS CloudWatch Alarms (devsaathi-lambda-errors)   ·   AWS X-Ray (Tracing active across all Lambdas)   ·   GitHub Actions (CI/CD build & deploy)',W/2,OBy+50,11,'#6b7280');
+  text('All Lambda functions emit structured logs to CloudWatch and are traced end-to-end via X-Ray',W/2,OBy+70,10,'#4b5563');
+
+  // ════════════════════════════════════════════════════════
+  // ARROWS
+  // ════════════════════════════════════════════════════════
+  // Browser → CloudFront
+  arrow(W/2-200,L1y+L1h,W/2-200,L2y+44,'#3b82f6',false,'HTTPS Request','#93c5fd');
+  // Browser → API Gateway
+  arrow(W/2+200,L1y+L1h,W/2+200,L2y+44,'#8b5cf6',false,'HTTPS API Calls','#c4b5fd');
+  // API Gateway → Cognito (curved right)
+  curvedArrow(W-PAD-40,L2y+110,W-PAD-40,L5y+134,W-PAD+60,(L2y+L5y)/2,'#f59e0b',true,'Verifies JWT');
+  // API Gateway → Lambda
+  arrow(W/2,L2y+L2h,W/2,L3y,'#8b5cf6',false,'Invokes Route Handler','#c4b5fd');
+  // Lambda → Bedrock
+  arrow(W/2-200,L3y+L3h,W/2-200,L4y,'#f59e0b',false,'InvokeModel API','#fcd34d');
+  // Lambda → DynamoDB
+  arrow(W/2+100,L3y+L3h,W/2+100,L5y,'#14b8a6',false,'Store/Query','#5eead4');
+  // Lambda → S3 (prompt)
+  arrow(W/2+300,L3y+L3h,W/2+300,L5y,'#14b8a6',true,'Get Prompt / Read File','#5eead4');
+  // Browser → S3 Uploads (dashed blue, far right)
+  curvedArrow(W-PAD-20,L1y+100,W-PAD-20,L5y+134,W-PAD+80,(L1y+L5y)/2,'#3b82f6',true,'Pre-signed URL Upload (10MB)');
+  // Lambda → CloudWatch (dashed gray)
+  arrow(PAD+60,L3y+L3h,PAD+60,OBy,'#6b7280',true,'Logs & X-Ray Tracing','#9ca3af');
+
+  // ── footer ──
+  text('DevSaathi AI · System Architecture · AWS Serverless Stack · © 2025',W/2,H-18,11,'#1e293b');
+}
+
+draw();
+</script>
+</body>
+</html>

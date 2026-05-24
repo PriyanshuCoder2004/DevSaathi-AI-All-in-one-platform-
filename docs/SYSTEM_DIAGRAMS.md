@@ -4,83 +4,109 @@ This document contains comprehensive architectural, behavioral, and structural d
 
 ---
 
-## 1. Use Case Diagram
+### 1. Use Case Diagram
 
-This diagram illustrates the primary interactions between the system actors (Student/Developer, AWS Cognito, Amazon Bedrock AI, and DynamoDB) and the core platform use cases.
+This diagram illustrates the primary interactions between the system actors (Student/Developer, AWS Cognito, Amazon Bedrock AI, and DynamoDB) and the core platform use cases. It is styled in a clean, plain monochrome look with actors distributed on the left and right sides.
 
 ```mermaid
-graph TD
-    %% Actors
-    User[["👤 Student / Developer"]]
-    Cognito[["🔐 AWS Cognito (Auth)"]]
-    Bedrock[["🤖 Amazon Bedrock (AI Engine)"]]
-    Dynamo[["📦 AWS DynamoDB (Storage)"]]
+graph LR
+    %% Actors Definition (Primary on Left, System Actors on Right)
+    Student[["👤 Student / Developer"]]
+    Cognito[["🔐 AWS Cognito"]]
+    Bedrock[["🤖 AWS Bedrock AI"]]
 
-    %% Subsystem: Authentication & Settings
-    subgraph Auth_Subsystem ["Authentication & Preferences"]
-        UC1["Register / Login (SRP)"]
-        UC2["Verify Email (OTP)"]
-        UC3["Reset Password"]
-        UC4["Toggle Multilingual (EN/HI)"]
+    %% System Boundary (No inner boxes, just one clean boundary)
+    subgraph DevSaathi_System ["DevSaathi AI System"]
+        %% Authentication Use Cases
+        UC1([Register Account])
+        UC2([Verify Email OTP])
+        UC3([Login])
+        UC4([Reset Password])
+        UC5([Logout])
+
+        %% AI Learning Tutor Use Cases
+        UC6([Enter Topic Query])
+        UC7([View AI Explanation])
+        UC8([Generate Quiz])
+        UC9([Take Quiz and Get Score])
+        UC10([Save Notes Automatically])
+        UC11([View Notes Library])
+        UC12([Edit and Delete Notes])
+
+        %% Code Analyzer Use Cases
+        UC13([Paste Code in Editor])
+        UC14([Explain Code])
+        UC15([Debug Code - Find Bugs])
+        UC16([Get Improvement Suggestions])
+
+        %% Documentation Use Cases
+        UC17([Upload PDF / Markdown])
+        UC18([View AI Summary])
+        UC19([Save Summary to Notes])
+
+        %% Dashboard Use Cases
+        UC20([View Progress Dashboard])
+        UC21([Track Learning Streak])
+        UC22([View 30-Day Activity Chart])
+        UC23([View Quiz History])
+        UC24([View Weak Areas])
     end
 
-    %% Subsystem: Core Learning & AI
-    subgraph AI_Learning_Subsystem ["AI Tutoring & Practice"]
-        UC5["Explore Modular Topics"]
-        UC6["Ask AI Explanation & Analogies"]
-        UC7["Ask Follow-up Questions"]
-        UC8["Generate Custom AI Quiz"]
-        UC9["Evaluate Quiz & Feedback"]
-        UC10["Generate & Save AI Notes"]
-        UC11["AI Code Review & Debugging"]
-    end
+    %% Primary Actor (Student/Developer) Associations (Left side)
+    Student --- UC1
+    Student --- UC3
+    Student --- UC4
+    Student --- UC5
+    Student --- UC6
+    Student --- UC7
+    Student --- UC9
+    Student --- UC11
+    Student --- UC12
+    Student --- UC14
+    Student --- UC15
+    Student --- UC16
+    Student --- UC18
+    Student --- UC19
+    Student --- UC20
 
-    %% Subsystem: Analytics & History
-    subgraph Analytics_Subsystem ["Progress & Tracking"]
-        UC12["View Dashboard Metrics"]
-        UC13["Track Mastery Percentage"]
-        UC14["View Activity History Feed"]
-    end
+    %% System Actors Associations (Right side)
+    UC1 --- Cognito
+    UC2 --- Cognito
+    UC3 --- Cognito
+    UC4 --- Cognito
 
-    %% User Connections
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    User --> UC5
-    User --> UC6
-    User --> UC7
-    User --> UC8
-    User --> UC9
-    User --> UC10
-    User --> UC11
-    User --> UC12
-    User --> UC13
-    User --> UC14
+    UC7 --- Bedrock
+    UC8 --- Bedrock
+    UC14 --- Bedrock
+    UC15 --- Bedrock
+    UC16 --- Bedrock
+    UC18 --- Bedrock
 
-    %% Backend Service Connections
-    UC1 --> Cognito
-    UC2 --> Cognito
-    UC3 --> Cognito
-    UC6 --> Bedrock
-    UC7 --> Bedrock
-    UC8 --> Bedrock
-    UC9 --> Bedrock
-    UC10 --> Bedrock
-    UC11 --> Bedrock
+    %% Include Relationships (Dashed arrows from Base to Included)
+    UC1 -.->|&lt;&lt;include&gt;&gt;| UC2
+    UC4 -.->|&lt;&lt;include&gt;&gt;| UC2
+    UC8 -.->|&lt;&lt;include&gt;&gt;| UC6
+    UC14 -.->|&lt;&lt;include&gt;&gt;| UC13
+    UC15 -.->|&lt;&lt;include&gt;&gt;| UC13
+    UC16 -.->|&lt;&lt;include&gt;&gt;| UC13
+    UC18 -.->|&lt;&lt;include&gt;&gt;| UC17
+    
+    UC20 -.->|&lt;&lt;include&gt;&gt;| UC21
+    UC20 -.->|&lt;&lt;include&gt;&gt;| UC22
+    UC20 -.->|&lt;&lt;include&gt;&gt;| UC23
+    UC20 -.->|&lt;&lt;include&gt;&gt;| UC24
 
-    UC6 --> Dynamo
-    UC9 --> Dynamo
-    UC10 --> Dynamo
-    UC12 --> Dynamo
-    UC13 --> Dynamo
-    UC14 --> Dynamo
+    %% Extend Relationships (Dashed arrows from Extending to Base)
+    UC10 -.->|&lt;&lt;extend&gt;&gt;| UC7
+    UC8 -.->|&lt;&lt;extend&gt;&gt;| UC7
+    UC19 -.->|&lt;&lt;extend&gt;&gt;| UC18
 
-    %% Styling
-    classDef actor fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#fff,font-weight:bold;
-    classDef usecase fill:#0F172A,stroke:#64748B,stroke-width:1px,color:#E2E8F0;
-    class User,Cognito,Bedrock,Dynamo actor;
-    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13,UC14 usecase;
+    %% Styling classes (Clean monochrome styling like reference image)
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000;
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    
+    class Student,Cognito,Bedrock actor;
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13,UC14,UC15,UC16,UC17,UC18,UC19,UC20,UC21,UC22,UC23,UC24 usecase;
 ```
 
 ---
@@ -255,7 +281,7 @@ erDiagram
 
 ## 4. End-to-End System Architecture Flow
 
-This diagram illustrates the end-to-end data and execution flow when a user requests an AI explanation from the client interface down to the AWS cloud infrastructure.
+This diagram illustrates the end-to-end data and execution flow when a user requests an AI explanation from the client interface down to the AWS cloud infrastructure. It is styled in a clean monochrome (black & white) look.
 
 ```mermaid
 graph LR
@@ -294,14 +320,183 @@ graph LR
     Lambda -->|8. Save Learned Topic| DynamoDB
     Lambda -->|9. Return Formatted Response| UI
 
-    %% Styling
-    classDef client fill:#0284C7,stroke:#0369A1,stroke-width:2px,color:#fff,font-weight:bold;
-    classDef api fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff,font-weight:bold;
-    classDef compute fill:#10B981,stroke:#047857,stroke-width:2px,color:#fff,font-weight:bold;
-    classDef cloud fill:#6366F1,stroke:#4338CA,stroke-width:2px,color:#fff,font-weight:bold;
+    %% Styling (Clean Plain Monochrome)
+    style Client_Layer fill:#ffffff,stroke:#000000,stroke-width:1.5px,stroke-dasharray: 5 5;
+    style API_Layer fill:#ffffff,stroke:#000000,stroke-width:1.5px,stroke-dasharray: 5 5;
+    style Compute_Layer fill:#ffffff,stroke:#000000,stroke-width:1.5px,stroke-dasharray: 5 5;
+    style Cloud_Services fill:#ffffff,stroke:#000000,stroke-width:1.5px,stroke-dasharray: 5 5;
 
-    class UI,State client;
-    class GW api;
-    class Lambda,PromptEngine compute;
-    class S3,BedrockNova,DynamoDB cloud;
+    classDef plain fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    class UI,State,GW,Lambda,PromptEngine,S3,BedrockNova,DynamoDB plain;
+```
+
+---
+
+## 5. System Architecture Diagram
+
+This diagram displays the high-level system architecture of the DevSaathi AI platform, detailing the primary components, data flow routing, and storage tier in a clean monochrome block style.
+
+```mermaid
+graph TD
+    %% Actors / Components
+    Cognito["🔐 AWS Cognito<br/>(Authentication)"]
+    Student["👤 Student / Developer"]
+    
+    ViteApp["💻 React Frontend (Vite)<br/>(Client Application)"]
+
+    ApiGateway["🌐 AWS API Gateway<br/>(API Routing)"]
+    Lambda["⚡ AWS Lambda Functions<br/>(Tutor, Code, Docs, Dash)"]
+
+    %% Bottom Tier: Datastores & AI Engines
+    S3Prompts[("🪣 AWS S3 Bucket<br/>(Prompt Templates)")]
+    Bedrock["🧠 Amazon Bedrock<br/>(Nova Lite AI Model)"]
+    S3Uploads[("🪣 AWS S3 Bucket<br/>(User File Uploads)")]
+    DynamoDB[("📦 AWS DynamoDB<br/>(Single-Table Storage)")]
+
+    %% Connections
+    Student -->|1. Authenticate / Login| ViteApp
+    ViteApp <-->|2. Validate Session / JWT Token| Cognito
+    
+    Student -->|3. Learn, Code, & Upload Docs| ViteApp
+    ViteApp -->|4. REST API Calls (HTTPS)| ApiGateway
+    
+    ApiGateway -->|5. Trigger Handlers| Lambda
+    
+    Lambda -->|6. Fetch Prompt Templates| S3Prompts
+    Lambda -->|7. Request AI Response| Bedrock
+    Lambda -->|8. Read / Write User Files| S3Uploads
+    Lambda -->|9. Save Progress, Notes, Streaks| DynamoDB
+
+    %% Styling (Plain Monochrome)
+    classDef plain fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;
+    class Student,Cognito,ViteApp,ApiGateway,Lambda,S3Prompts,Bedrock,S3Uploads,DynamoDB plain;
+```
+
+---
+
+## 6. Data Flow Diagrams (DFD)
+
+This section contains the Data Flow Diagrams (DFD) for the DevSaathi AI platform, styled in a clean Yourdon-Coad notation style with process circles (blue), datastore databases/cylinders (yellow), and entity rectangles (gray).
+
+### 6.1 Level 0 — Context Diagram
+The Context Diagram defines the system boundary, showing the single central process (`DevSaathi AI System`) and its interactions with external entities.
+
+```mermaid
+graph LR
+    %% External Entities (Gray Rectangles)
+    Student["👤 Student / Developer"]
+    Cognito["🔐 AWS Cognito"]
+    Bedrock["🤖 AWS Bedrock AI"]
+    S3["📦 AWS S3"]
+
+    %% System Process (Blue Circle - Yourdon-Coad style)
+    System((DevSaathi AI System))
+
+    %% Data Flows
+    Student -->|Topic queries, Code, Files,<br/>Quiz answers, Login credentials| System
+    System -->|Explanations, Quiz questions,<br/>Debug results, Summaries, Progress data| Student
+
+    System -->|Registration data, Login credentials| Cognito
+    Cognito -->|JWT tokens, OTP codes,<br/>User verification status| System
+
+    System -->|Formatted prompts with user input| Bedrock
+    Bedrock -->|JSON AI responses<br/>(explanations, bugs, summaries)| System
+
+    System -->|User uploaded files,<br/>React app bundle, Prompt templates| S3
+    S3 -->|Pre-signed URLs, File contents, Prompt text| System
+
+    %% Yourdon-Coad Color Styling
+    classDef entity fill:#f1f5f9,stroke:#475569,stroke-width:2px,color:#0f172a,font-weight:bold;
+    classDef process fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a,font-weight:bold;
+    
+    class Student,Cognito,Bedrock,S3 entity;
+    class System process;
+```
+
+### 6.2 Level 1 — Detailed Data Flow Diagram
+The Level 1 DFD decomposes the central system process into 6 detailed subprocesses and exposes the primary data stores (DynamoDB Tables and S3 Buckets) to illustrate data persistence and movement.
+
+```mermaid
+graph LR
+    %% External Entities (Gray Rectangles)
+    User["👤 Student / Developer"]
+    Cognito["🔐 AWS Cognito"]
+    Bedrock["🤖 AWS Bedrock AI"]
+
+    %% Processes (Blue Circles - Yourdon-Coad style)
+    P1((P1: Authentication Process))
+    P2((P2: AI Learning Tutor Process))
+    P3((P3: Code Analyzer Process))
+    P4((P4: Documentation Process))
+    P5((P5: Dashboard & Progress Process))
+    P6((P6: Notes Management Process))
+
+    %% Data Stores (Yellow Databases)
+    DS1[("DS1: Users Table<br/>PK: USER#id, SK: PROFILE")]
+    DS2[("DS2: Topics Table<br/>PK: USER#id, SK: TOPIC#timestamp")]
+    DS3[("DS3: Quiz Table<br/>PK: USER#id, SK: QUIZ#timestamp")]
+    DS4[("DS4: Notes Table<br/>PK: USER#id, SK: NOTE#timestamp")]
+    DS5[("DS5: Docs Table<br/>PK: USER#id, SK: DOC#timestamp")]
+    DS6[("DS6: S3 - User Uploads Bucket")]
+    DS7[("DS7: S3 - Prompt Templates Bucket")]
+
+    %% Flows for P1 (Authentication)
+    User -->|email, password, name| P1
+    P1 -->|registration / login request| Cognito
+    Cognito -->|JWT token / OTP| P1
+    P1 -->|write user profile| DS1
+    P1 -->|auth token, session| User
+
+    %% Flows for P2 (AI Learning Tutor & Quizzes)
+    User -->|topic text, language preference| P2
+    P2 -->|fetch prompt template| DS7
+    DS7 -->|explain-topic.txt| P2
+    P2 -->|formatted prompt| Bedrock
+    Bedrock -->|explanation JSON| P2
+    P2 -->|write topic record| DS2
+    P2 -->|write quiz results and score| DS3
+    P2 -->|explanation, example, subtopics, quiz questions| User
+
+    %% Flows for P3 (Code Analyzer)
+    User -->|code snippet, action type| P3
+    P3 -->|fetch code prompt template| DS7
+    DS7 -->|debug/explain/improve template| P3
+    P3 -->|formatted code prompt| Bedrock
+    Bedrock -->|analysis JSON (bugs/explanation)| P3
+    P3 -->|code analysis results| User
+
+    %% Flows for P4 (Documentation)
+    User -->|PDF / Markdown file| P4
+    P4 -->|upload file via pre-signed URL| DS6
+    DS6 -->|file content for processing| P4
+    P4 -->|extracted text + summarize prompt| Bedrock
+    Bedrock -->|summary JSON| P4
+    P4 -->|write doc summary record| DS5
+    P4 -->|structured summary with key points| User
+
+    %% Flows for P6 (Notes Management)
+    P2 -->|topic explanation for note generation| P6
+    P4 -->|doc summary for note generation| P6
+    User -->|manual note content| P6
+    P6 -->|structure notes prompt| Bedrock
+    Bedrock -->|formatted note content| P6
+    P6 -->|write / update note| DS4
+    P6 -->|saved note confirmation| User
+
+    %% Flows for P5 (Dashboard & Progress)
+    User -->|dashboard view request| P5
+    P5 -->|query topics count| DS2
+    P5 -->|query quiz results and scores| DS3
+    P5 -->|query notes count| DS4
+    P5 -->|query docs count| DS5
+    P5 -->|stats, 30-day chart data, weak areas| User
+
+    %% Yourdon-Coad Color Styling
+    classDef entity fill:#f1f5f9,stroke:#475569,stroke-width:2px,color:#0f172a,font-weight:bold;
+    classDef process fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a,font-weight:bold;
+    classDef datastore fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#713f12,font-weight:bold;
+    
+    class User,Cognito,Bedrock entity;
+    class P1,P2,P3,P4,P5,P6 process;
+    class DS1,DS2,DS3,DS4,DS5,DS6,DS7 datastore;
 ```
